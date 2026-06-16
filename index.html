@@ -7,218 +7,675 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* Tema Langit Biru */
-            --bg-color: #f0f7ff;
+            /* Light Theme (Biru Langit Kartun Lucu) */
+            --bg-color: #e3f2fd;
             --card-bg: #ffffff;
-            --text-color: #1e3a5f;
-            --primary: #3498db;
-            --primary-shadow: #2980b9;
-            --accent: #aed6f1;
-            --masuk: #2ecc71;
-            --keluar: #e74c3c;
-            --border: 3px solid #3498db;
-            --radius: 20px;
+            --text-color: #2c3e50;
+            --primary: #4da6ff;
+            --primary-shadow: #2b76c2;
+            --accent: #bce0ff;
+            --masuk: #a8f5a8;
+            --keluar: #ffb3b3;
+            --border: 4px solid #4da6ff;
+            --radius: 25px;
         }
 
         [data-theme="dark"] {
-            --bg-color: #0f2027;
-            --card-bg: #203a43;
-            --text-color: #ffffff;
-            --primary: #4aa3df;
-            --primary-shadow: #2c3e50;
-            --accent: #2c3e50;
-            --masuk: #27ae60;
-            --keluar: #c0392b;
-            --border: 3px solid #4aa3df;
+            /* Dark Theme (Malam/Gelap tapi tetap lucu) */
+            --bg-color: #1a2636;
+            --card-bg: #25354c;
+            --text-color: #e3f2fd;
+            --primary: #4da6ff;
+            --primary-shadow: #2b76c2;
+            --accent: #375073;
+            --masuk: #388e3c;
+            --keluar: #d32f2f;
+            --border: 4px solid #4da6ff;
         }
 
-        * { box-sizing: border-box; font-family: 'Nunito', sans-serif; transition: background-color 0.3s, color 0.3s; }
+        * {
+            box-sizing: border-box;
+            font-family: 'Nunito', sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* Set HTML & Body untuk mendukung Sticky Footer */
+        html {
+            height: 100%;
+        }
 
         body {
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
             padding: 20px;
-            font-size: 0.95rem; /* Font diperkecil */
+            font-size: 16px; /* Ukuran Font Diperkecil */
+            display: flex;
+            flex-direction: column;
+            min-height: 100%;
         }
 
-        .container { max-width: 800px; margin: 0 auto; }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            flex: 1 0 auto; /* Mendorong footer ke bawah jika konten sedikit */
+            width: 100%;
+        }
 
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        /* Header & Tema */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
 
-        h1 { font-size: 1.8rem; margin: 0; color: var(--primary); }
+        h1 {
+            font-size: 2rem; /* Diperkecil */
+            margin: 0;
+            color: var(--primary);
+            text-shadow: 2px 2px 0px var(--primary-shadow);
+            -webkit-text-stroke: 1px var(--text-color);
+        }
 
-        button { font-size: 0.95rem; font-weight: bold; padding: 8px 16px; border-radius: var(--radius); border: none; background-color: var(--primary); color: white; cursor: pointer; box-shadow: 0 3px 0 var(--primary-shadow); }
+        button {
+            font-size: 1rem; /* Diperkecil */
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: var(--radius);
+            border: var(--border);
+            background-color: var(--primary);
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 5px 0 var(--primary-shadow);
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
 
-        button:active { transform: translateY(3px); box-shadow: 0 0 0 var(--primary-shadow); }
+        button:active {
+            transform: translateY(5px);
+            box-shadow: 0 0 0 var(--primary-shadow);
+        }
 
-        .btn-icon { padding: 8px; border-radius: 50%; width: 40px; height: 40px; font-size: 1rem; }
+        .btn-icon {
+            padding: 8px;
+            border-radius: 50%;
+            width: 36px; /* Diperkecil */
+            height: 36px; /* Diperkecil */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1rem; /* Diperkecil */
+        }
 
-        .card { background-color: var(--card-bg); border: 2px solid var(--accent); border-radius: var(--radius); padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        /* Kartu & Form */
+        .card {
+            background-color: var(--card-bg);
+            border: var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 0 var(--primary-shadow);
+        }
 
-        input, select { width: 100%; padding: 10px; margin-bottom: 10px; font-size: 0.95rem; border: 2px solid var(--accent); border-radius: 10px; background-color: #f9f9f9; }
+        input, select {
+            width: 100%;
+            padding: 10px; /* Diperkecil */
+            margin-bottom: 15px;
+            font-size: 0.95rem; /* Diperkecil */
+            border: 3px solid var(--primary);
+            border-radius: 15px;
+            background-color: white;
+            color: #333;
+            outline: none;
+        }
 
-        .dompet-tab { background-color: var(--accent); color: var(--text-color); margin-right: 5px; font-size: 0.9rem; }
-        .dompet-tab.active { background-color: var(--primary); color: white; }
+        .dompet-list {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
 
-        .saldo-box { text-align: center; font-size: 1.5rem; font-weight: 800; margin-bottom: 15px; color: var(--primary); }
+        .dompet-tab {
+            background-color: var(--accent);
+            color: var(--text-color);
+        }
 
-        .riwayat-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-radius: 10px; margin-bottom: 8px; border: 1px solid #ddd; background-color: white; gap: 10px; }
+        .dompet-tab.active {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        /* Saldo */
+        .saldo-box {
+            text-align: center;
+            font-size: 1.6rem; /* Diperkecil */
+            font-weight: 900;
+            margin-bottom: 20px;
+        }
+
+        /* Grid Form */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        @media (max-width: 600px) {
+            .form-grid { grid-template-columns: 1fr; }
+        }
+
+        /* Filter & Search */
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .toolbar > * {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        /* Ringkasan Total Masuk / Keluar */
+        .summary-box {
+            display: flex;
+            justify-content: space-between;
+            background-color: rgba(255, 255, 255, 0.4);
+            border: 3px dashed var(--primary);
+            border-radius: 15px;
+            padding: 12px 15px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            font-size: 0.95rem; /* Diperkecil */
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        /* Riwayat List */
+        .riwayat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 10px;
+            border: 3px solid var(--primary);
+            background-color: white;
+            color: #333;
+            gap: 15px;
+        }
+
+        .riwayat-item.masuk { border-left: 10px solid var(--masuk); }
+        .riwayat-item.keluar { border-left: 10px solid var(--keluar); }
+
+        .r-info { flex-grow: 1; }
+        .r-info strong { display: block; font-size: 1.05rem; /* Diperkecil */ }
+        .r-info span { font-size: 0.85rem; color: #666; }
+        .r-nominal { font-size: 1.15rem; /* Diperkecil */ font-weight: bold; }
+
+        .r-foto {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            object-fit: cover;
+            cursor: pointer;
+            border: 2px solid var(--primary);
+        }
+
+        .r-aksi {
+            display: flex;
+            gap: 5px;
+        }
+
+        .r-aksi button {
+            padding: 5px 10px;
+            font-size: 0.9rem;
+            box-shadow: 0 3px 0 var(--primary-shadow);
+        }
+
+        /* Modals (Foto) */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0; top: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 20px;
+        }
         
-        .riwayat-item.masuk { border-left: 6px solid var(--masuk); }
-        .riwayat-item.keluar { border-left: 6px solid var(--keluar); }
+        #img-modal img {
+            max-width: 90%;
+            max-height: 80%;
+            border-radius: 20px;
+            border: var(--border);
+        }
+        #img-modal button {
+            margin-top: 20px;
+        }
 
-        footer { text-align: center; margin-top: 30px; font-size: 0.8rem; opacity: 0.6; }
+        /* Footer Kunci di Bawah */
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            font-weight: bold;
+            opacity: 0.8;
+            flex-shrink: 0; /* Mencegah footer menciut */
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
         <header>
-            <div>
-                <h1 style="font-size: 1.5rem;">Buku Uang Mas Sigit</h1>
-                <div style="font-size: 0.9rem; font-weight: bold; margin-top: 3px;">Catatan Keuangan Papa Ganteng</div>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <img id="app-logo" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%234da6ff'><path d='M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 16H6V4h1v11l2.5-1.5L12 15V4h6v14z'/></svg>" alt="Logo" style="width: 45px; height: 45px; background-color: white; padding: 6px; border-radius: 50%; border: var(--border); object-fit: contain;">
+                <div>
+                    <h1>Buku Uang Mas Sigit</h1>
+                    <div id="app-subtitle" style="font-size: 1rem; font-weight: bold; margin-top: 3px; opacity: 0.9;">Catatan Keuangan Mas Sigit Ganteng✨</div>
+                </div>
             </div>
-            <button id="btn-tema" class="btn-icon" onclick="toggleTema()">🌙</button>
+            <div style="display: flex; gap: 10px;">
+                <button id="btn-tema" class="btn-icon" onclick="toggleTema()" title="Ganti Tema">🌙</button>
+            </div>
         </header>
 
         <div class="card">
-            <h2 style="display: flex; align-items: center; gap: 10px;">
-                <span style="font-size: 1.5rem;">💰</span> Dompetku
-            </h2> 
+            <h2>💰 Dompetku</h2>
+            
+            <div style="font-size: 1.05rem; font-weight: bold; margin-bottom: 15px; background-color: var(--accent); padding: 10px 15px; border-radius: 15px; border: 3px solid var(--primary); display: inline-block;">
+                🌍 Saldo Seluruh Dompet: <span id="saldo-keseluruhan">Rp 0</span>
+            </div>
+
             <div style="display: flex; gap: 10px;">
-                <input type="text" id="nama-dompet-baru" placeholder="Nama dompet...">
+                <input type="text" id="nama-dompet-baru" placeholder="Nama dompet baru (cth: Tabungan)...">
                 <button onclick="tambahDompet()">+ Buat</button>
             </div>
-            <div id="list-dompet" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px;"></div>
+            <div id="list-dompet" class="dompet-list" style="margin-top: 15px;">
+            </div>
         </div>
 
         <div id="area-dompet" style="display: none;">
             <div class="card">
-                <div class="saldo-box">Saldo: <span id="saldo-total">Rp 0</span></div>
-                <div style="display: flex; justify-content: center; gap: 10px;">
-                    <button onclick="editDompet()">✏️ Edit</button>
-                    <button onclick="hapusDompet()" style="background-color: var(--keluar);">🗑️ Hapus</button>
+                <div class="saldo-box">
+                    Saldo Dompet Ini: <span id="saldo-total">Rp 0</span>
+                    
+                    <div style="margin-top: 15px; display: flex; justify-content: center; gap: 10px;">
+                        <button onclick="editDompet()" style="font-size: 0.9rem; padding: 8px 15px;">✏️ Ubah Nama Dompet</button>
+                        <button onclick="hapusDompet()" style="font-size: 0.9rem; padding: 8px 15px; background-color: var(--keluar);">🗑️ Hapus Dompet</button>
+                    </div>
                 </div>
 
-                <h3 style="font-size: 1.1rem;">📝 Catat Transaksi</h3>
+                <h3>📝 Catat Transaksi</h3>
                 <form id="form-transaksi" onsubmit="simpanTransaksi(event)">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div class="form-grid">
                         <input type="date" id="input-tgl" required>
                         <select id="input-jenis" required>
-                            <option value="masuk">🟢 Masuk</option>
-                            <option value="keluar">🔴 Keluar</option>
+                            <option value="masuk">🟢 Uang Masuk</option>
+                            <option value="keluar">🔴 Uang Keluar</option>
                         </select>
-                        <input type="number" id="input-nominal" placeholder="Nominal" required>
-                        <input type="text" id="input-catatan" placeholder="Catatan" required>
+                        <input type="number" id="input-nominal" placeholder="Nominal (cth: 50000)" required>
+                        <input type="text" id="input-catatan" placeholder="Catatan (cth: Beli jajan)" required>
                     </div>
+                    <label style="font-weight:bold; display:block; margin-bottom:5px;">📸 Struk/Foto (Opsional)</label>
                     <input type="file" id="input-foto" accept="image/*">
-                    <button type="submit" id="btn-simpan-tx" style="width: 100%;">💾 Simpan</button>
+                    <button type="submit" id="btn-simpan-tx" style="width: 100%;">💾 Simpan Catatan</button>
                 </form>
             </div>
 
             <div class="card">
-                <h3 style="font-size: 1.1rem;">📜 Riwayat</h3>
-                <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
-                    <input type="text" id="cari-teks" placeholder="Cari..." oninput="renderRiwayat()" style="flex:1">
-                    <select id="filter-waktu" onchange="renderRiwayat()" style="flex:1">
+                <h3>📜 Riwayat</h3>
+                <div class="toolbar">
+                    <input type="text" id="cari-teks" placeholder="Cari catatan..." oninput="renderRiwayat()">
+                    
+                    <select id="filter-waktu" onchange="renderRiwayat()">
                         <option value="semua">Semua Waktu</option>
                         <option value="harian">Hari Ini</option>
+                        <option value="bulanan">Bulan Ini</option>
+                        <option value="tahunan">Tahun Ini</option>
+                    </select>
+
+                    <select id="filter-jenis" onchange="renderRiwayat()">
+                        <option value="semua">Semua Jenis</option>
+                        <option value="masuk">🟢 Hanya Masuk</option>
+                        <option value="keluar">🔴 Hanya Keluar</option>
                     </select>
                 </div>
-                <div id="list-riwayat"></div>
+
+                <div class="summary-box">
+                    <div style="color: #2e7d32;">🟢 Total Masuk: <span id="total-masuk">Rp 0</span></div>
+                    <div style="color: #c62828;">🔴 Total Keluar: <span id="total-keluar">Rp 0</span></div>
+                </div>
+
+                <div id="list-riwayat">
+                </div>
             </div>
         </div>
-        <footer>&copy; 2026 PT Arta Makmur Jaya Sentosa. All Rights Reserved.</footer>
     </div>
 
-    <script>
-        let dataBukuUang = JSON.parse(localStorage.getItem('dataBukuUang')) || { dompet: [] };
-        let dompetAktifId = null; let editTxId = null; let fotoBase64 = ""; 
+    <div id="img-modal" class="modal-overlay">
+        <img id="img-full" src="">
+        <button onclick="tutupFoto()">❌ Tutup</button>
+    </div>
 
+    <footer>
+        &copy; 2026 PT Arta Makmur Jaya Sentosa. Hak Cipta Dilindungi.
+    </footer>
+
+    <script>
+        // --- INISIALISASI VARIABEL LOKAL ---
+        let dataBukuUang = JSON.parse(localStorage.getItem('dataBukuUang')) || { dompet: [] };
+        
+        let dompetAktifId = null;
+        let editTxId = null; 
+        let fotoBase64 = ""; 
+
+        // --- SISTEM TEMA GELAP/TERANG ---
         function toggleTema() {
             const body = document.body;
             const isDark = body.getAttribute('data-theme') === 'dark';
-            if (isDark) { body.removeAttribute('data-theme'); document.getElementById('btn-tema').innerText = '🌙'; } 
-            else { body.setAttribute('data-theme', 'dark'); document.getElementById('btn-tema').innerText = '☀️'; }
-        }
-
-        document.getElementById('input-foto').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) { const reader = new FileReader(); reader.onload = (ev) => fotoBase64 = ev.target.result; reader.readAsDataURL(file); }
-        });
-
-        function simpanKeLokal() { localStorage.setItem('dataBukuUang', JSON.stringify(dataBukuUang)); }
-
-        function tambahDompet() {
-            const nama = document.getElementById('nama-dompet-baru').value.trim();
-            if (!nama) return alert("Isi nama dompet!");
-            dataBukuUang.dompet.push({ id: Date.now().toString(), nama: nama, transaksi: [] });
-            document.getElementById('nama-dompet-baru').value = '';
-            simpanKeLokal(); renderDompet(); pilihDompet(dataBukuUang.dompet[dataBukuUang.dompet.length-1].id);
-        }
-
-        function renderDompet() {
-            const list = document.getElementById('list-dompet'); list.innerHTML = '';
-            dataBukuUang.dompet.forEach(d => {
-                const btn = document.createElement('button');
-                btn.className = 'dompet-tab ' + (dompetAktifId === d.id ? 'active' : '');
-                btn.innerText = d.nama; btn.onclick = () => pilihDompet(d.id);
-                list.appendChild(btn);
-            });
-        }
-
-        function pilihDompet(id) { dompetAktifId = id; document.getElementById('area-dompet').style.display = 'block'; renderDompet(); renderRiwayat(); }
-
-        function editDompet() {
-            const d = dataBukuUang.dompet.find(x => x.id === dompetAktifId);
-            const n = prompt("Ubah nama:", d.nama);
-            if (n) { d.nama = n; simpanKeLokal(); renderDompet(); }
-        }
-
-        function hapusDompet() {
-            if (confirm("Yakin hapus?")) {
-                dataBukuUang.dompet = dataBukuUang.dompet.filter(x => x.id !== dompetAktifId);
-                simpanKeLokal(); document.getElementById('area-dompet').style.display = 'none'; renderDompet();
+            if (isDark) {
+                body.removeAttribute('data-theme');
+                document.getElementById('btn-tema').innerText = '🌙';
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                document.getElementById('btn-tema').innerText = '☀️';
             }
         }
 
+        // --- KONVERSI FOTO KE BASE64 ---
+        document.getElementById('input-foto').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    fotoBase64 = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                fotoBase64 = "";
+            }
+        });
+
+        // --- FUNGSI DOMPET ---
+        function simpanKeLokal() {
+            localStorage.setItem('dataBukuUang', JSON.stringify(dataBukuUang));
+        }
+
+        // --- FUNGSI BARU: HITUNG TOTAL SALDO KESELURUHANN GABUNGAN DOMPET ---
+        function hitungSaldoKeseluruhan() {
+            let totalGabungan = 0;
+            dataBukuUang.dompet.forEach(d => {
+                d.transaksi.forEach(t => {
+                    if (t.jenis === 'masuk') totalGabungan += t.nominal;
+                    else totalGabungan -= t.nominal;
+                });
+            });
+            document.getElementById('saldo-keseluruhan').innerText = formatRupiah(totalGabungan);
+        }
+
+        function tambahDompet() {
+            const nama = document.getElementById('nama-dompet-baru').value.trim();
+            if (!nama) return alert("Isi nama dompet dulu ya! 🐷");
+
+            const dompetBaru = {
+                id: Date.now().toString(),
+                nama: nama,
+                transaksi: []
+            };
+            dataBukuUang.dompet.push(dompetBaru);
+            document.getElementById('nama-dompet-baru').value = '';
+            simpanKeLokal();
+            renderDompet();
+            pilihDompet(dompetBaru.id); // Otomatis pilih dompet yang baru dibuat
+        }
+
+        function renderDompet() {
+            const list = document.getElementById('list-dompet');
+            list.innerHTML = '';
+            
+            dataBukuUang.dompet.forEach(d => {
+                const btn = document.createElement('button');
+                btn.className = 'dompet-tab ' + (dompetAktifId === d.id ? 'active' : '');
+                btn.innerText = `💰 ${d.nama}`;
+                btn.onclick = () => pilihDompet(d.id);
+                list.appendChild(btn);
+            });
+
+            hitungSaldoKeseluruhan(); // Perbarui saldo gabungan global
+
+            if (dataBukuUang.dompet.length === 0) {
+                document.getElementById('area-dompet').style.display = 'none';
+            }
+        }
+
+        function pilihDompet(id) {
+            dompetAktifId = id;
+            document.getElementById('area-dompet').style.display = 'block';
+            batalEdit();
+            renderDompet();
+            renderRiwayat();
+        }
+
+        // --- FUNGSI EDIT & HAPUS DOMPET BARU ---
+        function editDompet() {
+            if (!dompetAktifId) return;
+            const dompet = dataBukuUang.dompet.find(d => d.id === dompetAktifId);
+            const namaBaru = prompt("Ubah nama dompet menjadi:", dompet.nama);
+            
+            if (namaBaru !== null && namaBaru.trim() !== "") {
+                dompet.nama = namaBaru.trim();
+                simpanKeLokal();
+                renderDompet();
+            }
+        }
+
+        function hapusDompet() {
+            if (!dompetAktifId) return;
+            const dompet = dataBukuUang.dompet.find(d => d.id === dompetAktifId);
+            
+            if (confirm(`Yakin mau hapus dompet "${dompet.nama}" beserta seluruh riwayat catatannya? 🗑️`)) {
+                dataBukuUang.dompet = dataBukuUang.dompet.filter(d => d.id !== dompetAktifId);
+                simpanKeLokal();
+                
+                if (dataBukuUang.dompet.length > 0) {
+                    pilihDompet(dataBukuUang.dompet[0].id);
+                } else {
+                    dompetAktifId = null;
+                    renderDompet();
+                    document.getElementById('area-dompet').style.display = 'none';
+                }
+            }
+        }
+
+        // --- FUNGSI TRANSAKSI ---
         function simpanTransaksi(e) {
             e.preventDefault();
-            const d = dataBukuUang.dompet.find(x => x.id === dompetAktifId);
-            const tx = {
-                id: editTxId || Date.now().toString(),
-                tgl: document.getElementById('input-tgl').value,
-                jenis: document.getElementById('input-jenis').value,
-                nominal: parseInt(document.getElementById('input-nominal').value),
-                catatan: document.getElementById('input-catatan').value,
-                foto: fotoBase64 || (editTxId ? d.transaksi.find(t=>t.id==editTxId).foto : "")
-            };
-            if(editTxId) { d.transaksi = d.transaksi.map(x => x.id === editTxId ? tx : x); editTxId = null; }
-            else d.transaksi.push(tx);
-            simpanKeLokal(); renderRiwayat(); document.getElementById('form-transaksi').reset(); fotoBase64 = "";
+            const tgl = document.getElementById('input-tgl').value;
+            const jenis = document.getElementById('input-jenis').value;
+            const nominal = parseInt(document.getElementById('input-nominal').value);
+            const catatan = document.getElementById('input-catatan').value;
+
+            const dompet = dataBukuUang.dompet.find(d => d.id === dompetAktifId);
+
+            if (editTxId) {
+                const txIndex = dompet.transaksi.findIndex(t => t.id === editTxId);
+                dompet.transaksi[txIndex] = {
+                    ...dompet.transaksi[txIndex],
+                    tgl, jenis, nominal, catatan,
+                    foto: fotoBase64 || dompet.transaksi[txIndex].foto
+                };
+            } else {
+                const txBaru = {
+                    id: Date.now().toString(),
+                    tgl, jenis, nominal, catatan,
+                    foto: fotoBase64
+                };
+                dompet.transaksi.push(txBaru);
+            }
+
+            batalEdit();
+            simpanKeLokal();
+            renderRiwayat();
         }
 
-        function hapusTransaksi(id) { if(confirm("Hapus?")) { const d = dataBukuUang.dompet.find(x => x.id === dompetAktifId); d.transaksi = d.transaksi.filter(t => t.id !== id); simpanKeLokal(); renderRiwayat(); } }
+        function hapusTransaksi(idTx) {
+            if(!confirm("Yakin mau hapus catatan ini? 🗑️")) return;
+            const dompet = dataBukuUang.dompet.find(d => d.id === dompetAktifId);
+            dompet.transaksi = dompet.transaksi.filter(t => t.id !== idTx);
+            simpanKeLokal();
+            renderRiwayat();
+        }
 
-        function formatRupiah(a) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(a); }
+        function siapkanEdit(idTx) {
+            const dompet = dataBukuUang.dompet.find(d => d.id === dompetAktifId);
+            const tx = dompet.transaksi.find(t => t.id === idTx);
+            
+            document.getElementById('input-tgl').value = tx.tgl;
+            document.getElementById('input-jenis').value = tx.jenis;
+            document.getElementById('input-nominal').value = tx.nominal;
+            document.getElementById('input-catatan').value = tx.catatan;
+            
+            editTxId = tx.id;
+            fotoBase64 = ""; 
+            document.getElementById('input-foto').value = ""; 
+            document.getElementById('btn-simpan-tx').innerText = "✏️ Update Catatan";
+            document.getElementById('btn-simpan-tx').style.backgroundColor = "#bce0ff";
+            window.scrollTo({ top: document.getElementById('form-transaksi').offsetTop - 50, behavior: 'smooth' });
+        }
+
+        function batalEdit() {
+            document.getElementById('form-transaksi').reset();
+            editTxId = null;
+            fotoBase64 = "";
+            document.getElementById('btn-simpan-tx').innerText = "💾 Simpan Catatan";
+            document.getElementById('btn-simpan-tx').style.backgroundColor = "var(--primary)";
+        }
+
+        // --- FILTER & RENDER RIWAYAT ---
+        function formatRupiah(angka) {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
+        }
 
         function renderRiwayat() {
-            const d = dataBukuUang.dompet.find(x => x.id === dompetAktifId);
-            const list = document.getElementById('list-riwayat'); list.innerHTML = '';
-            let s = 0;
-            d.transaksi.forEach(t => {
-                if(t.jenis === 'masuk') s += t.nominal; else s -= t.nominal;
-                list.innerHTML += `<div class="riwayat-item ${t.jenis}">
-                    <div style="flex-grow:1"><strong>${t.catatan}</strong><br><small>${t.tgl}</small></div>
-                    <div style="font-weight:bold; color:${t.jenis==='masuk'?'var(--masuk)':'var(--keluar)'}">${t.jenis==='masuk'?'+':'-'} ${formatRupiah(t.nominal)}</div>
-                    <button onclick="hapusTransaksi('${t.id}')" style="background:none; color:red; box-shadow:none; padding:5px">🗑️</button>
+            if (!dompetAktifId) return;
+            const dompet = dataBukuUang.dompet.find(d => d.id === dompetAktifId);
+            const listArea = document.getElementById('list-riwayat');
+            const cariTeks = document.getElementById('cari-teks').value.toLowerCase();
+            const filterWaktu = document.getElementById('filter-waktu').value;
+            const filterJenis = document.getElementById('filter-jenis').value; 
+            
+            let saldoTotal = 0;
+            let totalMasuk = 0;
+            let totalKeluar = 0;
+            let hasilHTML = "";
+
+            const hariIni = new Date();
+            const strTahunIni = hariIni.getFullYear().toString();
+            const strBulanIni = (hariIni.getMonth() + 1).toString().padStart(2, '0');
+            const strHariIni = hariIni.getDate().toString().padStart(2, '0');
+            
+            const formatHariIni = `${strTahunIni}-${strBulanIni}-${strHariIni}`;
+            const formatBulanIni = `${strTahunIni}-${strBulanIni}`;
+
+            let transaksiTampil = [...dompet.transaksi].sort((a,b) => b.id - a.id);
+
+            // Hitung Saldo Mutlak Dompet Terpilih
+            dompet.transaksi.forEach(t => {
+                if(t.jenis === 'masuk') saldoTotal += t.nominal;
+                else saldoTotal -= t.nominal;
+            });
+            document.getElementById('saldo-total').innerText = formatRupiah(saldoTotal);
+
+            // Filter data riwayat yang tampil
+            transaksiTampil = transaksiTampil.filter(t => {
+                const cocokTeks = t.catatan.toLowerCase().includes(cariTeks) || t.nominal.toString().includes(cariTeks);
+                let cocokWaktu = true;
+                let cocokJenis = true;
+                
+                if (filterWaktu === 'harian') {
+                    cocokWaktu = t.tgl === formatHariIni;
+                } else if (filterWaktu === 'bulanan') {
+                    cocokWaktu = t.tgl.startsWith(formatBulanIni);
+                } else if (filterWaktu === 'tahunan') {
+                    cocokWaktu = t.tgl.startsWith(strTahunIni);
+                }
+
+                if (filterJenis !== 'semua') {
+                    cocokJenis = t.jenis === filterJenis;
+                }
+
+                return cocokTeks && cocokWaktu && cocokJenis;
+            });
+
+            // Hitung Total Masuk & Keluar dari riwayat yang lolos filter
+            transaksiTampil.forEach(t => {
+                if (t.jenis === 'masuk') {
+                    totalMasuk += t.nominal;
+                } else {
+                    totalKeluar += t.nominal;
+                }
+            });
+
+            // Perbarui data angka di element box ringkasan riwayat
+            document.getElementById('total-masuk').innerText = formatRupiah(totalMasuk);
+            document.getElementById('total-keluar').innerText = formatRupiah(totalKeluar);
+
+            // Perbarui juga saldo gabungan global setiap ada perubahan transaksi
+            hitungSaldoKeseluruhan();
+
+            if (transaksiTampil.length === 0) {
+                listArea.innerHTML = "<p style='text-align:center; color:#888;'>Kosong nih~ 🍃</p>";
+                return;
+            }
+
+            transaksiTampil.forEach(t => {
+                const imgTag = t.foto ? `<img src="${t.foto}" class="r-foto" onclick="bukaFoto('${t.foto}')">` : '';
+                const operator = t.jenis === 'masuk' ? '+' : '-';
+                const warnaNominal = t.jenis === 'masuk' ? 'green' : 'red';
+
+                hasilHTML += `
+                <div class="riwayat-item ${t.jenis}">
+                    ${imgTag}
+                    <div class="r-info">
+                        <strong>${t.catatan}</strong>
+                        <span>📅 ${t.tgl}</span>
+                    </div>
+                    <div class="r-nominal" style="color:${warnaNominal}">
+                        ${operator} ${formatRupiah(t.nominal)}
+                    </div>
+                    <div class="r-aksi">
+                        <button onclick="siapkanEdit('${t.id}')">✏️</button>
+                        <button onclick="hapusTransaksi('${t.id}')" style="background-color: var(--keluar);">🗑️</button>
+                    </div>
                 </div>`;
             });
-            document.getElementById('saldo-total').innerText = formatRupiah(s);
+
+            listArea.innerHTML = hasilHTML;
         }
-        
-        if (dataBukuUang.dompet.length > 0) pilihDompet(dataBukuUang.dompet[0].id);
+
+        // --- FUNGSI FOTO MODAL ---
+        function bukaFoto(src) {
+            document.getElementById('img-full').src = src;
+            document.getElementById('img-modal').style.display = 'flex';
+        }
+
+        function tutupFoto() {
+            document.getElementById('img-modal').style.display = 'none';
+        }
+
+        // --- INIT AWAL ---
+        if (dataBukuUang.dompet.length > 0) {
+            pilihDompet(dataBukuUang.dompet[0].id);
+        } else {
+            renderDompet();
+        }
     </script>
 </body>
 </html>
