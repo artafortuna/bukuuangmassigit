@@ -268,6 +268,15 @@
             opacity: 0.8;
             flex-shrink: 0; /* Mencegah footer menciut */
         }
+        
+        /* Area Status Loading DB */
+        #db-loading {
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary);
+            padding: 50px;
+        }
     </style>
 </head>
 <body>
@@ -286,25 +295,35 @@
             </div>
         </header>
 
-        <div class="card">
-            <h2>💰 Dompetku</h2>
-            
-            <div style="font-size: 1.05rem; font-weight: bold; margin-bottom: 15px; background-color: var(--accent); padding: 10px 15px; border-radius: 15px; border: 3px solid var(--primary); display: inline-block;">
-                🌍 Saldo Seluruh Dompet: <span id="saldo-keseluruhan">Rp 0</span>
-            </div>
+        <div id="db-loading">⏳ Menyiapkan Brankas Penyimpanan...</div>
 
-            <div style="display: flex; gap: 10px;">
-                <input type="text" id="nama-dompet-baru" placeholder="Nama dompet baru (cth: Tabungan)...">
-                <button onclick="tambahDompet()">+ Buat</button>
-            </div>
-            <div id="list-dompet" class="dompet-list" style="margin-top: 15px;">
+        <div id="halaman-utama" style="display: none;">
+            <div class="card">
+                <h2>💰 Daftar Dompetku</h2>
+                
+                <div style="font-size: 1.05rem; font-weight: bold; margin-bottom: 15px; background-color: var(--accent); padding: 10px 15px; border-radius: 15px; border: 3px solid var(--primary); display: inline-block;">
+                    🌍 Saldo Seluruh Dompet: <span id="saldo-keseluruhan">Rp 0</span>
+                </div>
+
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="nama-dompet-baru" placeholder="Nama dompet baru (cth: Tabungan)...">
+                    <button onclick="tambahDompet()">+ Buat</button>
+                </div>
+                
+                <div id="list-dompet" class="dompet-list" style="margin-top: 15px;">
+                    </div>
             </div>
         </div>
 
-        <div id="area-dompet" style="display: none;">
+        <div id="halaman-dompet" style="display: none;">
+            <button onclick="bukaHalamanUtama()" style="margin-bottom: 20px; background-color: var(--accent); color: var(--text-color); border: 3px solid var(--primary); box-shadow: 0 4px 0 var(--primary-shadow);">
+                ⬅️ Kembali ke Beranda
+            </button>
+
             <div class="card">
                 <div class="saldo-box">
-                    Saldo Dompet Ini: <span id="saldo-total">Rp 0</span>
+                    <span id="judul-dompet-aktif" style="display:block; font-size: 1rem; color: #666; margin-bottom:5px;">Nama Dompet</span>
+                    Saldo: <span id="saldo-total">Rp 0</span>
                     
                     <div style="margin-top: 15px; display: flex; justify-content: center; gap: 10px;">
                         <button onclick="editDompet()" style="font-size: 0.9rem; padding: 8px 15px;">✏️ Ubah Nama Dompet</button>
@@ -323,7 +342,14 @@
                         <input type="number" id="input-nominal" placeholder="Nominal (cth: 50000)" required>
                         <input type="text" id="input-catatan" placeholder="Catatan (cth: Beli jajan)" required>
                     </div>
+                    
                     <label style="font-weight:bold; display:block; margin-bottom:5px;">📸 Struk/Foto (Opsional)</label>
+                    
+                    <div id="area-edit-foto" style="display:none; align-items:center; gap:10px; margin-bottom:10px; padding: 10px; background-color: var(--bg-color); border-radius: 10px; border: 2px dashed var(--primary);">
+                        <img id="preview-foto-lama" src="" style="width:50px; height:50px; border-radius:10px; object-fit:cover; border:2px solid var(--primary);">
+                        <button type="button" onclick="hapusFotoSaatEdit()" style="background-color: var(--keluar); padding:5px 10px; font-size:0.8rem; box-shadow: 0 3px 0 var(--primary-shadow);">🗑️ Hapus Foto Lama</button>
+                    </div>
+
                     <input type="file" id="input-foto" accept="image/*">
                     <button type="submit" id="btn-simpan-tx" style="width: 100%;">💾 Simpan Catatan</button>
                 </form>
@@ -370,11 +396,13 @@
 
     <script>
         // --- INISIALISASI VARIABEL LOKAL ---
-        let dataBukuUang = JSON.parse(localStorage.getItem('dataBukuUang')) || { dompet: [] };
+        let dataBukuUang = { dompet: [] }; // Default awal, akan ditimpa IndexedDB
+        let db; // Variabel koneksi IndexedDB
         
         let dompetAktifId = null;
         let editTxId = null; 
         let fotoBase64 = ""; 
+        let statusHapusFotoLama = false; // Flag untuk mendeteksi penekanan tombol hapus gambar
 
         // --- SISTEM TEMA GELAP/TERANG ---
         function toggleTema() {
@@ -396,6 +424,7 @@
                 const reader = new FileReader();
                 reader.onload = function(event) {
                     fotoBase64 = event.target.result;
+                    statusHapusFotoLama = false; // Reset flag jika user upload baru
                 };
                 reader.readAsDataURL(file);
             } else {
@@ -403,12 +432,78 @@
             }
         });
 
-        // --- FUNGSI DOMPET ---
-        function simpanKeLokal() {
-            localStorage.setItem('dataBukuUang', JSON.stringify(dataBukuUang));
+        // --- MANAJEMEN INDEXEDDB (MENGGANTIKAN LOCALSTORAGE) ---
+        function initDatabase() {
+            const request = indexedDB.open('BukuUangDB', 1);
+
+            request.onupgradeneeded = function(e) {
+                db = e.target.result;
+                if (!db.objectStoreNames.contains('store')) {
+                    db.createObjectStore('store', { keyPath: 'id' });
+                }
+            };
+
+            request.onsuccess = function(e) {
+                db = e.target.result;
+                muatDariDB();
+            };
+
+            request.onerror = function(e) {
+                console.error("IndexedDB Error:", e);
+                alert("Gagal memuat penyimpanan lokal. Pastikan browser Anda mendukung IndexedDB.");
+            };
         }
 
-        // --- FUNGSI BARU: HITUNG TOTAL SALDO KESELURUHANN GABUNGAN DOMPET ---
+        function muatDariDB() {
+            const tx = db.transaction('store', 'readonly');
+            const store = tx.objectStore('store');
+            const req = store.get('mainData');
+
+            req.onsuccess = function() {
+                if (req.result) {
+                    dataBukuUang = req.result.data;
+                }
+                
+                // Sembunyikan loading, mulai aplikasi
+                document.getElementById('db-loading').style.display = 'none';
+                bukaHalamanUtama();
+            };
+        }
+
+        function simpanKeDB(callback) {
+            const tx = db.transaction('store', 'readwrite');
+            const store = tx.objectStore('store');
+            const req = store.put({ id: 'mainData', data: dataBukuUang });
+            
+            req.onsuccess = function() {
+                if (callback) callback();
+            };
+        }
+
+        // --- FUNGSI MULTI HALAMAN (VIEW ROUTING) ---
+        function bukaHalamanUtama() {
+            dompetAktifId = null;
+            document.getElementById('halaman-dompet').style.display = 'none';
+            document.getElementById('halaman-utama').style.display = 'block';
+            renderDompet();
+        }
+
+        function pilihDompet(id) {
+            dompetAktifId = id;
+            const dompet = dataBukuUang.dompet.find(d => d.id === id);
+            
+            // Set judul dompet di halaman dalam
+            document.getElementById('judul-dompet-aktif').innerText = "Dompet: " + dompet.nama;
+
+            // Ganti Halaman
+            document.getElementById('halaman-utama').style.display = 'none';
+            document.getElementById('halaman-dompet').style.display = 'block';
+            
+            batalEdit();
+            renderRiwayat();
+        }
+
+        // --- FUNGSI DOMPET ---
         function hitungSaldoKeseluruhan() {
             let totalGabungan = 0;
             dataBukuUang.dompet.forEach(d => {
@@ -431,39 +526,32 @@
             };
             dataBukuUang.dompet.push(dompetBaru);
             document.getElementById('nama-dompet-baru').value = '';
-            simpanKeLokal();
-            renderDompet();
-            pilihDompet(dompetBaru.id); // Otomatis pilih dompet yang baru dibuat
+            
+            simpanKeDB(() => {
+                renderDompet();
+                pilihDompet(dompetBaru.id); // Langsung buka dompet baru
+            });
         }
 
         function renderDompet() {
             const list = document.getElementById('list-dompet');
             list.innerHTML = '';
             
-            dataBukuUang.dompet.forEach(d => {
-                const btn = document.createElement('button');
-                btn.className = 'dompet-tab ' + (dompetAktifId === d.id ? 'active' : '');
-                btn.innerText = `💰 ${d.nama}`;
-                btn.onclick = () => pilihDompet(d.id);
-                list.appendChild(btn);
-            });
-
-            hitungSaldoKeseluruhan(); // Perbarui saldo gabungan global
-
             if (dataBukuUang.dompet.length === 0) {
-                document.getElementById('area-dompet').style.display = 'none';
+                list.innerHTML = "<p style='color:#888; width:100%; text-align:center;'>Belum ada dompet. Bikin dulu yuk!</p>";
+            } else {
+                dataBukuUang.dompet.forEach(d => {
+                    const btn = document.createElement('button');
+                    btn.className = 'dompet-tab ' + (dompetAktifId === d.id ? 'active' : '');
+                    btn.innerText = `💰 ${d.nama}`;
+                    btn.onclick = () => pilihDompet(d.id);
+                    list.appendChild(btn);
+                });
             }
+
+            hitungSaldoKeseluruhan();
         }
 
-        function pilihDompet(id) {
-            dompetAktifId = id;
-            document.getElementById('area-dompet').style.display = 'block';
-            batalEdit();
-            renderDompet();
-            renderRiwayat();
-        }
-
-        // --- FUNGSI EDIT & HAPUS DOMPET BARU ---
         function editDompet() {
             if (!dompetAktifId) return;
             const dompet = dataBukuUang.dompet.find(d => d.id === dompetAktifId);
@@ -471,8 +559,9 @@
             
             if (namaBaru !== null && namaBaru.trim() !== "") {
                 dompet.nama = namaBaru.trim();
-                simpanKeLokal();
-                renderDompet();
+                simpanKeDB(() => {
+                    document.getElementById('judul-dompet-aktif').innerText = "Dompet: " + dompet.nama;
+                });
             }
         }
 
@@ -482,19 +571,20 @@
             
             if (confirm(`Yakin mau hapus dompet "${dompet.nama}" beserta seluruh riwayat catatannya? 🗑️`)) {
                 dataBukuUang.dompet = dataBukuUang.dompet.filter(d => d.id !== dompetAktifId);
-                simpanKeLokal();
-                
-                if (dataBukuUang.dompet.length > 0) {
-                    pilihDompet(dataBukuUang.dompet[0].id);
-                } else {
-                    dompetAktifId = null;
-                    renderDompet();
-                    document.getElementById('area-dompet').style.display = 'none';
-                }
+                simpanKeDB(() => {
+                    bukaHalamanUtama(); // Kembali ke depan karena dompetnya terhapus
+                });
             }
         }
 
-        // --- FUNGSI TRANSAKSI ---
+        // --- FUNGSI TRANSAKSI & FOTO ---
+        function hapusFotoSaatEdit() {
+            statusHapusFotoLama = true;
+            fotoBase64 = "";
+            document.getElementById('area-edit-foto').style.display = 'none';
+            document.getElementById('input-foto').value = ""; // Reset file input
+        }
+
         function simpanTransaksi(e) {
             e.preventDefault();
             const tgl = document.getElementById('input-tgl').value;
@@ -506,10 +596,19 @@
 
             if (editTxId) {
                 const txIndex = dompet.transaksi.findIndex(t => t.id === editTxId);
+                
+                // Logika Penentuan Foto Final Saat Update
+                let finalFoto = dompet.transaksi[txIndex].foto; 
+                if (statusHapusFotoLama) {
+                    finalFoto = ""; // Dihapus oleh user
+                } else if (fotoBase64 !== "") {
+                    finalFoto = fotoBase64; // Ditimpa dengan foto upload baru
+                }
+
                 dompet.transaksi[txIndex] = {
                     ...dompet.transaksi[txIndex],
                     tgl, jenis, nominal, catatan,
-                    foto: fotoBase64 || dompet.transaksi[txIndex].foto
+                    foto: finalFoto
                 };
             } else {
                 const txBaru = {
@@ -521,16 +620,19 @@
             }
 
             batalEdit();
-            simpanKeLokal();
-            renderRiwayat();
+            simpanKeDB(() => {
+                renderRiwayat();
+            });
         }
 
         function hapusTransaksi(idTx) {
             if(!confirm("Yakin mau hapus catatan ini? 🗑️")) return;
             const dompet = dataBukuUang.dompet.find(d => d.id === dompetAktifId);
             dompet.transaksi = dompet.transaksi.filter(t => t.id !== idTx);
-            simpanKeLokal();
-            renderRiwayat();
+            
+            simpanKeDB(() => {
+                renderRiwayat();
+            });
         }
 
         function siapkanEdit(idTx) {
@@ -544,7 +646,18 @@
             
             editTxId = tx.id;
             fotoBase64 = ""; 
+            statusHapusFotoLama = false;
             document.getElementById('input-foto').value = ""; 
+            
+            // Tampilkan UI Hapus Foto jika foto lama tersedia
+            const areaEditFoto = document.getElementById('area-edit-foto');
+            if(tx.foto) {
+                document.getElementById('preview-foto-lama').src = tx.foto;
+                areaEditFoto.style.display = 'flex';
+            } else {
+                areaEditFoto.style.display = 'none';
+            }
+
             document.getElementById('btn-simpan-tx').innerText = "✏️ Update Catatan";
             document.getElementById('btn-simpan-tx').style.backgroundColor = "#bce0ff";
             window.scrollTo({ top: document.getElementById('form-transaksi').offsetTop - 50, behavior: 'smooth' });
@@ -554,6 +667,8 @@
             document.getElementById('form-transaksi').reset();
             editTxId = null;
             fotoBase64 = "";
+            statusHapusFotoLama = false;
+            document.getElementById('area-edit-foto').style.display = 'none';
             document.getElementById('btn-simpan-tx').innerText = "💾 Simpan Catatan";
             document.getElementById('btn-simpan-tx').style.backgroundColor = "var(--primary)";
         }
@@ -627,9 +742,6 @@
             document.getElementById('total-masuk').innerText = formatRupiah(totalMasuk);
             document.getElementById('total-keluar').innerText = formatRupiah(totalKeluar);
 
-            // Perbarui juga saldo gabungan global setiap ada perubahan transaksi
-            hitungSaldoKeseluruhan();
-
             if (transaksiTampil.length === 0) {
                 listArea.innerHTML = "<p style='text-align:center; color:#888;'>Kosong nih~ 🍃</p>";
                 return;
@@ -670,12 +782,10 @@
             document.getElementById('img-modal').style.display = 'none';
         }
 
-        // --- INIT AWAL ---
-        if (dataBukuUang.dompet.length > 0) {
-            pilihDompet(dataBukuUang.dompet[0].id);
-        } else {
-            renderDompet();
-        }
+        // --- JALANKAN APLIKASI SAAT PERTAMA DIBUKA ---
+        window.onload = function() {
+            initDatabase();
+        };
     </script>
 </body>
 </html>
