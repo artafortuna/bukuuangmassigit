@@ -4,7 +4,11 @@ let editTxId = null;
 let fotoBase64 = ""; 
 let statusHapusFotoLama = false; 
 
-// --- FUNGSI CUSTOM POPUP MODAL (PENGGANTI BAWAAN BROWSER) ---
+// State Target
+let targetAktifId = null;
+let editCicilanId = null;
+
+// --- FUNGSI CUSTOM POPUP MODAL ---
 function customAlert(message) {
     return new Promise(resolve => {
         const modal = document.getElementById('modal-alert');
@@ -92,24 +96,32 @@ function switchTab(tabId) {
 
     if (tabId === 'transaksi') {
         renderRiwayat();
+    } else if (tabId === 'target') {
+        renderRiwayatCicilan();
     } else {
         renderDompet();
+        renderTargetBeranda();
     }
 }
 
 function initApp() {
+    // Pastikan data target ada (antisipasi data lama)
+    if (!dataBukuUang.target) dataBukuUang.target = [];
     switchTab('beranda');
 }
 
-// --- FUNGSI FORMAT TANGGAL DD/MM/YYYY ---
+// --- FORMAT UTILS ---
 function formatTanggal(tglStr) {
     if (!tglStr) return '-';
     const parts = tglStr.split('-');
-    // Pastikan format asli adalah YYYY-MM-DD
     if (parts.length === 3) {
         return `${parts[2]}/${parts[1]}/${parts[0]}`;
     }
     return tglStr;
+}
+
+function formatRupiah(angka) {
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
 }
 
 // --- LOGIKA DOMPET ---
@@ -147,7 +159,7 @@ function renderDompet() {
     list.innerHTML = '';
     
     if (dataBukuUang.dompet.length === 0) {
-        list.innerHTML = "<div style='grid-column: 1/-1; text-align:center; padding: 30px; color: var(--text-muted); font-size: 0.9rem;'>Belum ada dompet. Bikin dulu yuk!</div>";
+        list.innerHTML = "<div style='grid-column: 1/-1; text-align:center; padding: 30px; color: var(--text-muted); font-size: 0.9rem;'>Belum ada dompet. Bikin dulu yuk! 💳</div>";
     } else {
         dataBukuUang.dompet.forEach(d => {
             let saldo = 0;
@@ -195,7 +207,7 @@ async function hapusDompet() {
     }
 }
 
-// --- TRANSAKSI & FOTO ---
+// --- TRANSAKSI (DOMPET) ---
 function hapusFotoSaatEdit() {
     statusHapusFotoLama = true;
     fotoBase64 = "";
@@ -278,11 +290,6 @@ function batalEdit() {
     btnSimpan.style.background = ""; 
 }
 
-// --- FILTER & RENDER TABEL ---
-function formatRupiah(angka) {
-    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
-}
-
 function renderRiwayat() {
     const stateKosong = document.getElementById('state-kosong-transaksi');
     const areaAktif = document.getElementById('area-transaksi-aktif');
@@ -355,7 +362,6 @@ function renderRiwayat() {
         const strNominal = (isMasuk ? '+ ' : '- ') + formatRupiah(t.nominal);
         const rowClass = isMasuk ? 'dt-masuk' : 'dt-keluar';
 
-        // Panggil fungsi formatTanggal untuk merubah YYYY-MM-DD menjadi DD/MM/YYYY
         htmlTabel += `
         <tr class="${rowClass}">
             <td>${formatTanggal(t.tgl)}</td>
@@ -366,6 +372,204 @@ function renderRiwayat() {
                 <div class="td-actions">
                     <button onclick="siapkanEdit('${t.id}')" class="btn-outline-sm">✏️ Edit</button>
                     <button onclick="hapusTransaksi('${t.id}')" class="btn-danger-sm">🗑️</button>
+                </div>
+            </td>
+        </tr>`;
+    });
+
+    tbody.innerHTML = htmlTabel;
+}
+
+// --- LOGIKA TARGET (FITUR BARU) ---
+async function tambahTarget() {
+    const nama = document.getElementById('nama-target-baru').value.trim();
+    const nominal = parseInt(document.getElementById('nominal-target-baru').value);
+
+    if (!nama || !nominal || isNaN(nominal)) {
+        return customAlert("Isi nama dan nominal target dengan benar ya! 🎯");
+    }
+
+    const targetBaru = {
+        id: Date.now().toString(),
+        nama: nama,
+        nominalTarget: nominal,
+        cicilan: []
+    };
+    
+    if(!dataBukuUang.target) dataBukuUang.target = [];
+    dataBukuUang.target.push(targetBaru);
+    
+    document.getElementById('nama-target-baru').value = '';
+    document.getElementById('nominal-target-baru').value = '';
+    
+    simpanKeDB(() => {
+        renderTargetBeranda();
+        pilihTarget(targetBaru.id);
+    });
+}
+
+function renderTargetBeranda() {
+    const list = document.getElementById('list-target-beranda');
+    list.innerHTML = '';
+    
+    if (!dataBukuUang.target || dataBukuUang.target.length === 0) {
+        list.innerHTML = "<div style='grid-column: 1/-1; text-align:center; padding: 20px; color: var(--text-muted); font-size: 0.9rem;'>Belum ada target. Yuk rencanakan impianmu! 🚀</div>";
+    } else {
+        dataBukuUang.target.forEach(t => {
+            let terkumpul = 0;
+            t.cicilan.forEach(c => terkumpul += c.nominal);
+
+            const div = document.createElement('div');
+            div.className = 'card target-card';
+            div.onclick = () => pilihTarget(t.id);
+            div.innerHTML = `
+                <h3>🎯 ${t.nama}</h3>
+                <div class="w-saldo" style="font-size: 0.9rem;">${formatRupiah(terkumpul)} / <span style="color:var(--text-muted); font-size: 0.75rem;">${formatRupiah(t.nominalTarget)}</span></div>
+            `;
+            list.appendChild(div);
+        });
+    }
+}
+
+function pilihTarget(id) {
+    targetAktifId = id;
+    batalEditCicilan();
+    switchTab('target'); 
+}
+
+async function editInfoTarget() {
+    if (!targetAktifId) return;
+    const targetObj = dataBukuUang.target.find(t => t.id === targetAktifId);
+    
+    const namaBaru = await customPrompt("Ubah nama target:", targetObj.nama);
+    if (!namaBaru) return;
+
+    const nominalBaruStr = await customPrompt("Ubah nominal target (angka saja):", targetObj.nominalTarget);
+    if (!nominalBaruStr) return;
+    const nominalBaru = parseInt(nominalBaruStr);
+    
+    if(isNaN(nominalBaru)) return customAlert("Nominal harus berupa angka!");
+
+    targetObj.nama = namaBaru;
+    targetObj.nominalTarget = nominalBaru;
+    simpanKeDB(() => { renderRiwayatCicilan(); });
+}
+
+async function hapusTarget() {
+    if (!targetAktifId) return;
+    const targetObj = dataBukuUang.target.find(t => t.id === targetAktifId);
+    
+    const isYakin = await customConfirm(`Hapus permanen target "${targetObj.nama}" beserta histori tabungannya?`);
+    if (isYakin) {
+        dataBukuUang.target = dataBukuUang.target.filter(t => t.id !== targetAktifId);
+        targetAktifId = null;
+        simpanKeDB(() => { switchTab('beranda'); });
+    }
+}
+
+// --- TRANSAKSI CICILAN TARGET ---
+function simpanCicilan(e) {
+    e.preventDefault();
+    const tgl = document.getElementById('input-tgl-cicilan').value;
+    const nominal = parseInt(document.getElementById('input-nominal-cicilan').value);
+    const catatan = document.getElementById('input-catatan-cicilan').value;
+
+    const targetObj = dataBukuUang.target.find(t => t.id === targetAktifId);
+
+    if (editCicilanId) {
+        const idx = targetObj.cicilan.findIndex(c => c.id === editCicilanId);
+        targetObj.cicilan[idx] = { ...targetObj.cicilan[idx], tgl, nominal, catatan };
+    } else {
+        const cicilanBaru = { id: Date.now().toString(), tgl, nominal, catatan };
+        targetObj.cicilan.push(cicilanBaru);
+    }
+
+    batalEditCicilan();
+    simpanKeDB(() => { renderRiwayatCicilan(); });
+}
+
+async function hapusCicilan(idCcl) {
+    const isYakin = await customConfirm("Hapus riwayat tabungan ini?");
+    if(isYakin) {
+        const targetObj = dataBukuUang.target.find(t => t.id === targetAktifId);
+        targetObj.cicilan = targetObj.cicilan.filter(c => c.id !== idCcl);
+        simpanKeDB(() => { renderRiwayatCicilan(); });
+    }
+}
+
+function siapkanEditCicilan(idCcl) {
+    const targetObj = dataBukuUang.target.find(t => t.id === targetAktifId);
+    const ccl = targetObj.cicilan.find(c => c.id === idCcl);
+    
+    document.getElementById('input-tgl-cicilan').value = ccl.tgl;
+    document.getElementById('input-nominal-cicilan').value = ccl.nominal;
+    document.getElementById('input-catatan-cicilan').value = ccl.catatan;
+    
+    editCicilanId = ccl.id;
+    
+    const btnSimpan = document.getElementById('btn-simpan-cicilan');
+    btnSimpan.innerHTML = "✏️ Update Tabungan";
+    btnSimpan.style.background = "var(--success)"; 
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function batalEditCicilan() {
+    document.getElementById('form-cicilan').reset();
+    editCicilanId = null;
+    
+    const btnSimpan = document.getElementById('btn-simpan-cicilan');
+    btnSimpan.innerHTML = "💾 Simpan Tabungan";
+    btnSimpan.style.background = ""; 
+}
+
+function renderRiwayatCicilan() {
+    const stateKosong = document.getElementById('state-kosong-target');
+    const areaAktif = document.getElementById('area-target-aktif');
+
+    if (!targetAktifId) {
+        stateKosong.style.display = 'block';
+        areaAktif.style.display = 'none';
+        return;
+    }
+
+    stateKosong.style.display = 'none';
+    areaAktif.style.display = 'block';
+
+    const targetObj = dataBukuUang.target.find(t => t.id === targetAktifId);
+    document.getElementById('judul-target-aktif').innerText = targetObj.nama;
+
+    let terkumpul = 0;
+    targetObj.cicilan.forEach(c => terkumpul += c.nominal);
+    
+    // Update Info & Progress Bar
+    document.getElementById('progres-nominal-target').innerText = `${formatRupiah(terkumpul)} / ${formatRupiah(targetObj.nominalTarget)}`;
+    
+    let persentase = (terkumpul / targetObj.nominalTarget) * 100;
+    if (persentase > 100) persentase = 100; // max 100% secara visual
+    
+    document.getElementById('progress-bar-fill').style.width = `${persentase}%`;
+    document.getElementById('progress-persen').innerText = `${persentase.toFixed(1)}% Tercapai`;
+
+    const tbody = document.getElementById('list-riwayat-cicilan');
+    let htmlTabel = "";
+    
+    let cicilanSort = [...targetObj.cicilan].sort((a,b) => b.id - a.id);
+
+    if (cicilanSort.length === 0) {
+        tbody.innerHTML = "<tr><td colspan='4' style='padding: 30px; color: var(--text-muted); text-align: center;'>Belum ada tabungan masuk. 🍃</td></tr>";
+        return;
+    }
+
+    cicilanSort.forEach(c => {
+        htmlTabel += `
+        <tr class="dt-masuk">
+            <td>${formatTanggal(c.tgl)}</td>
+            <td>${c.catatan}</td>
+            <td>+ ${formatRupiah(c.nominal)}</td>
+            <td>
+                <div class="td-actions">
+                    <button onclick="siapkanEditCicilan('${c.id}')" class="btn-outline-sm">✏️</button>
+                    <button onclick="hapusCicilan('${c.id}')" class="btn-danger-sm">🗑️</button>
                 </div>
             </td>
         </tr>`;
