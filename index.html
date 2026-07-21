@@ -7,7 +7,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="beach-theme">
+
+    <!-- Latar Belakang Pantai Tanpa Menutupi Data -->
+    <div class="beach-bg"></div>
 
     <header class="top-header">
         <div class="header-brand">
@@ -28,14 +31,15 @@
 
     <main class="main-content" id="app-content" style="display: none;">
         
+        <!-- TAB 1: BERANDA -->
         <section id="tab-beranda" class="tab-pane active">
             <div class="grid-2">
-                <div class="card dashboard-card">
+                <div class="card dashboard-card glowing-border">
                     <span class="label-light">Total Seluruh Dompet</span>
                     <h2 id="saldo-keseluruhan">Rp 0</h2>
                 </div>
 
-                <div class="card action-card">
+                <div class="card action-card glowing-border">
                     <h3 class="card-title-sm">Buat Dompet Baru</h3>
                     <div class="input-group">
                         <input type="text" id="nama-dompet-baru" placeholder="Cth: Tabungan Liburan...">
@@ -49,11 +53,30 @@
             <div class="section-header">
                 <h2 class="section-title">💳 Daftar Dompetku</h2>
             </div>
+            <div id="list-dompet" class="grid-2 dompet-grid"></div>
+
+            <!-- FITUR BARU: TARGET DI BERANDA -->
+            <div class="section-header mt-20">
+                <h2 class="section-title">🎯 Target Impian</h2>
+            </div>
             
-            <div id="list-dompet" class="grid-2 dompet-grid">
+            <!-- Form Input Target Baru -->
+            <div class="card action-card glowing-border mb-15">
+                <h3 class="card-title-sm">Buat Target Baru</h3>
+                <div class="form-grid-small">
+                    <input type="text" id="nama-target-baru" placeholder="Cth: Beli Motor Baru">
+                    <input type="number" id="nominal-target-baru" placeholder="Nominal (cth: 25000000)">
                 </div>
+                <button onclick="tambahTarget()" class="btn-primary w-100">
+                    <span class="icon-plus">➕</span> Buat Target
+                </button>
+            </div>
+
+            <!-- List Target 2 Grid Horizontal -->
+            <div id="list-target-beranda" class="grid-2 target-grid"></div>
         </section>
 
+        <!-- TAB 2: TRANSAKSI -->
         <section id="tab-transaksi" class="tab-pane">
             
             <div id="state-kosong-transaksi" class="empty-state">
@@ -64,7 +87,7 @@
 
             <div id="area-transaksi-aktif" style="display: none;">
                 <div class="grid-2">
-                    <div class="card wallet-info-card">
+                    <div class="card wallet-info-card glowing-border">
                         <div class="flex-between">
                             <div>
                                 <span class="label">Dompet Aktif</span>
@@ -82,7 +105,7 @@
                         </div>
                     </div>
 
-                    <div class="card form-card">
+                    <div class="card form-card glowing-border">
                         <h3 class="card-title">📝 Catat Transaksi</h3>
                         <form id="form-transaksi" onsubmit="simpanTransaksi(event)">
                             <div class="form-grid-small">
@@ -92,15 +115,19 @@
                                     <option value="keluar">🔴 Uang Keluar</option>
                                 </select>
                             </div>
-                            <input type="number" id="input-nominal" placeholder="Nominal (cth: 50000)" required>
-                            <input type="text" id="input-catatan" placeholder="Catatan (cth: Beli jajan)" required>
+                            <div class="mb-10">
+                                <input type="number" id="input-nominal" placeholder="Nominal (cth: 50000)" required>
+                            </div>
+                            <div class="mb-10">
+                                <input type="text" id="input-catatan" placeholder="Catatan (cth: Beli jajan)" required>
+                            </div>
                             
                             <div id="area-edit-foto" class="area-edit-foto">
                                 <img id="preview-foto-lama" src="" alt="Preview">
                                 <button type="button" onclick="hapusFotoSaatEdit()" class="btn-danger-sm">🗑️ Hapus</button>
                             </div>
                             
-                            <div class="flex-between" style="gap: 10px; margin-bottom: 5px;">
+                            <div class="flex-between" style="gap: 10px;">
                                 <input type="file" id="input-foto" accept="image/*" class="file-input-custom" title="Tambah Struk/Foto">
                                 <button type="submit" id="btn-simpan-tx" class="btn-primary w-100">💾 Simpan</button>
                             </div>
@@ -108,7 +135,7 @@
                     </div>
                 </div>
 
-                <div class="card mt-20">
+                <div class="card mt-20 glowing-border">
                     <div class="flex-between flex-wrap header-tabel">
                         <h3 class="card-title m-0">📜 Riwayat Data</h3>
                         <div class="search-box">
@@ -131,7 +158,7 @@
                         </select>
                     </div>
 
-                    <div class="table-responsive">
+                    <div class="table-responsive glowing-border">
                         <table class="data-table">
                             <thead>
                                 <tr>
@@ -142,8 +169,74 @@
                                     <th>Aksi</th>
                                 </tr>
                             </thead>
-                            <tbody id="list-riwayat-table">
-                                </tbody>
+                            <tbody id="list-riwayat-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: TARGET (FITUR BARU) -->
+        <section id="tab-target" class="tab-pane">
+            <div id="state-kosong-target" class="empty-state">
+                <div class="emoji-large">🎯</div>
+                <h3>Belum Ada Target Terpilih</h3>
+                <p>Silakan pilih target impian di menu Beranda terlebih dahulu.</p>
+            </div>
+
+            <div id="area-target-aktif" style="display: none;">
+                <div class="grid-2">
+                    <!-- Info Target -->
+                    <div class="card wallet-info-card glowing-border">
+                        <div class="flex-between">
+                            <div>
+                                <span class="label">Target Aktif</span>
+                                <h2 id="judul-target-aktif" class="dompet-aktif-title">Nama Target</h2>
+                                <h3 id="progres-nominal-target" class="text-primary mt-5">Rp 0 / Rp 0</h3>
+                            </div>
+                            <div class="aksi-dompet-vert">
+                                <button onclick="editInfoTarget()" class="btn-outline-sm">✏️ Ubah</button>
+                                <button onclick="hapusTarget()" class="btn-danger-sm">🗑️ Hapus</button>
+                            </div>
+                        </div>
+                        <div class="progress-bar-bg mt-10">
+                            <div id="progress-bar-fill" class="progress-bar-fill"></div>
+                        </div>
+                        <div class="text-right label mt-5" id="progress-persen">0% Tercapai</div>
+                    </div>
+
+                    <!-- Form Catat Tabungan/Cicilan -->
+                    <div class="card form-card glowing-border">
+                        <h3 class="card-title">📝 Catat Tabungan</h3>
+                        <form id="form-cicilan" onsubmit="simpanCicilan(event)">
+                            <div class="form-grid-small">
+                                <input type="date" id="input-tgl-cicilan" required>
+                                <input type="number" id="input-nominal-cicilan" placeholder="Nominal Masuk (cth: 50000)" required>
+                            </div>
+                            <div class="mb-10">
+                                <input type="text" id="input-catatan-cicilan" placeholder="Catatan (cth: Nabung minggu 1)" required>
+                            </div>
+                            <button type="submit" id="btn-simpan-cicilan" class="btn-primary w-100">💾 Simpan Tabungan</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Tabel Riwayat Cicilan (No Text Wrapping) -->
+                <div class="card mt-20 glowing-border">
+                    <div class="header-tabel">
+                        <h3 class="card-title m-0">📜 Riwayat Tabungan Target</h3>
+                    </div>
+                    <div class="table-responsive glowing-border">
+                        <table class="data-table no-wrap">
+                            <thead>
+                                <tr>
+                                    <th>Tanggal</th>
+                                    <th>Keterangan</th>
+                                    <th>Nominal</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="list-riwayat-cicilan"></tbody>
                         </table>
                     </div>
                 </div>
@@ -151,7 +244,7 @@
         </section>
     </main>
 
-    <div class="bottom-wrapper">
+    <div class="bottom-wrapper glowing-border-top">
         <nav class="bottom-nav">
             <button class="nav-item active" id="nav-beranda" onclick="switchTab('beranda')">
                 <span class="nav-icon">🏠</span>
@@ -161,14 +254,20 @@
                 <span class="nav-icon">📝</span>
                 <span class="nav-text">Transaksi</span>
             </button>
+            <!-- Navigasi Baru: Target -->
+            <button class="nav-item" id="nav-target" onclick="switchTab('target')">
+                <span class="nav-icon">🎯</span>
+                <span class="nav-text">Target</span>
+            </button>
         </nav>
         <footer class="floating-footer">
             &copy; 2026 Arta Fortuna. All Rights Reserved.
         </footer>
     </div>
 
+    <!-- Modals (Tidak Berubah) -->
     <div id="modal-alert" class="custom-modal-overlay">
-        <div class="custom-modal-box">
+        <div class="custom-modal-box glowing-border">
             <div class="modal-icon text-primary">ℹ️</div>
             <h3 class="modal-title">Informasi</h3>
             <p id="alert-msg" class="modal-desc">Pesan alert di sini.</p>
@@ -177,7 +276,7 @@
     </div>
 
     <div id="modal-confirm" class="custom-modal-overlay">
-        <div class="custom-modal-box">
+        <div class="custom-modal-box glowing-border">
             <div class="modal-icon text-danger">⚠️</div>
             <h3 class="modal-title">Konfirmasi</h3>
             <p id="confirm-msg" class="modal-desc">Apakah Anda yakin?</p>
@@ -189,7 +288,7 @@
     </div>
 
     <div id="modal-prompt" class="custom-modal-overlay">
-        <div class="custom-modal-box">
+        <div class="custom-modal-box glowing-border">
             <div class="modal-icon text-primary">✏️</div>
             <h3 class="modal-title">Input Data</h3>
             <p id="prompt-msg" class="modal-desc">Masukkan nilai baru:</p>
@@ -202,7 +301,7 @@
     </div>
 
     <div id="modal-foto" class="custom-modal-overlay" onclick="tutupFoto()">
-        <img id="img-full-view" src="" class="img-preview-large">
+        <img id="img-full-view" src="" class="img-preview-large glowing-border">
         <button class="btn-close-float" onclick="tutupFoto()">❌ Tutup</button>
     </div>
 
