@@ -1,6 +1,7 @@
 // --- MANAJEMEN INDEXEDDB (BRANKAS LOKAL) ---
 
-let dataBukuUang = { dompet: [] }; 
+// Struktur awal kini mendukung dompet dan target
+let dataBukuUang = { dompet: [], target: [] }; 
 let db; 
 
 function initDatabase() {
@@ -32,9 +33,15 @@ function muatDariDB() {
     req.onsuccess = function() {
         if (req.result) {
             dataBukuUang = req.result.data;
+            
+            // Kompatibilitas mundur: Jika pengguna lama buka versi baru, 
+            // pastikan array target terbentuk agar tidak terjadi error "undefined".
+            if (!dataBukuUang.target) {
+                dataBukuUang.target = [];
+            }
         }
         
-        // Matikan loading, inisiasi awal tampilan
+        // Matikan loading screen, inisiasi awal tampilan
         document.getElementById('db-loading').style.display = 'none';
         document.getElementById('app-content').style.display = 'block';
         initApp();
@@ -44,6 +51,8 @@ function muatDariDB() {
 function simpanKeDB(callback) {
     const tx = db.transaction('store', 'readwrite');
     const store = tx.objectStore('store');
+    
+    // Simpan semua state dataBukuUang (dompet & target) ke IndexedDB
     const req = store.put({ id: 'mainData', data: dataBukuUang });
     
     req.onsuccess = function() {
